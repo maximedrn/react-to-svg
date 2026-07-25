@@ -52,7 +52,7 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "name": "react-to-svg",
+  "name": "@maximedrn/react-to-svg",
   "peerDependencies": {
     "effect": "^3.10",
     "react": "^19",
