@@ -74,6 +74,6 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           npm init --yes
-          npm install ./react-to-svg-*.tgz react react-dom effect
+          npm install ./*.tgz react react-dom effect
           cp "$GITHUB_WORKSPACE/scripts/smoke.mjs" .
           node smoke.mjs

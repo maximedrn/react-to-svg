@@ -6,19 +6,19 @@ Turn a React component into a single animated, theme-aware SVG string - powered 
 
 ```bash
 # NPM
-npm i react-to-svg
+npm i @maximedrn/react-to-svg
 
 # PNPM
-pnpm add react-to-svg
+pnpm add @maximedrn/react-to-svg
 
 # Yarn
-yarn add react-to-svg
+yarn add @maximedrn/react-to-svg
 
 # Bun
-bun add react-to-svg
+bun add @maximedrn/react-to-svg
 
 # Deno
-deno add npm:react-to-svg
+deno add npm:@maximedrn/react-to-svg
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ import {
   RenderService,
   RenderServiceLive,
   ThemeVariant,
-} from "react-to-svg";
+} from "@maximedrn/react-to-svg";
 
 interface CardProps {
   theme: ThemeVariant;

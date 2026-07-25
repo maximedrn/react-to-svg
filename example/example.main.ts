@@ -15,7 +15,7 @@ import {
  * (regular + bold) as static `.otf`, which Satori reads directly.
  */
 const Family: string = "Inter";
-const OutputPath: string = "example.svg";
+const OutputPath: string = "example/example.svg";
 const Width: number = 1200;
 const Height: number = 630;
 
