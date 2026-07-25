@@ -1,0 +1,14 @@
+{
+  "ignorePaths": [
+    "node_modules",
+    "bun.lock",
+    ".git",
+    "LICENSE",
+    "README.md",
+    "dist",
+    "biome.json"
+  ],
+  "language": "en",
+  "version": "0.2",
+  "words": ["cooldown", "rasterizes", "renderable", "sindresorhus", "smil"]
+}

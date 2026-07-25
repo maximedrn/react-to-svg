@@ -1,0 +1,18 @@
+# Git.
+.git/
+
+# Dependencies.
+node_modules/
+
+# Build & pack artifacts.
+dist/
+*.tgz
+
+# Packages lock files.
+bun.lock
+
+# Binary and font files.
+*.ttf
+
+# Operating system files.
+.DS_Store

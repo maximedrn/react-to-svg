@@ -1,0 +1,11 @@
+{
+  "jsdocCommentLineStrategy": "multiline",
+  "jsdocDescriptionWithDot": true,
+  "jsdocPrintWidth": 80,
+  "jsdocSeparateReturnsFromParam": true,
+  "jsdocSeparateTagGroups": true,
+  "jsdocSpaces": 1,
+  "jsdocVerticalAlignment": false,
+  "plugins": ["prettier-plugin-jsdoc"],
+  "singleAttributePerLine": true
+}

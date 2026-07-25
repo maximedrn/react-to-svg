@@ -1,0 +1,9 @@
+# Dependencies.
+node_modules/
+
+# Build & pack artifacts.
+dist/
+*.tgz
+
+# Operating system files.
+.DS_Store

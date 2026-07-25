@@ -1,0 +1,87 @@
+{
+  "author": "Maxime Dréan",
+  "bugs": "https://github.com/maximedrn/react-to-svg/issues",
+  "dependencies": {
+    "@sindresorhus/is": "^8.1.0",
+    "react-reconciler": "^0.33.0",
+    "satori": "^0.28.0"
+  },
+  "description": "Turn a React component into one animated, theme-aware SVG string — Satori + Effect, no markup parsing.",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@biomejs/biome": "latest",
+    "@changesets/cli": "^2.31.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-reconciler": "^0.33.0",
+    "bun-types": "latest",
+    "effect": "latest",
+    "prettier": "^3.9.5",
+    "prettier-plugin-jsdoc": "^1.8.1",
+    "publint": "^0.3.21",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./theme.css": "./dist/render.theme.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/maximedrn/react-to-svg#readme",
+  "keywords": [
+    "svg",
+    "satori",
+    "react",
+    "animation",
+    "keyframes",
+    "effect",
+    "og-image",
+    "server-side-rendering"
+  ],
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "name": "react-to-svg",
+  "peerDependencies": {
+    "effect": "^3.10",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maximedrn/react-to-svg.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "check": "bun run typecheck && bun run lint:check && bun test && bun run build && bun run check:package && bun run check:exports",
+    "check:exports": "attw --pack . --exclude-entrypoints theme.css --ignore-rules cjs-resolves-to-esm",
+    "check:package": "publint --strict",
+    "lint:check": "biome check . && prettier --check .",
+    "lint:fix": "biome check --write . && prettier --write .",
+    "prepublishOnly": "bun run build",
+    "release": "changeset publish",
+    "start": "bun run example/example.main.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "version-packages": "changeset version"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.1.0"
+}
