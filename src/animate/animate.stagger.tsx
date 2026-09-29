@@ -17,6 +17,7 @@ const Stagger: FC<StaggerProps> = (props: StaggerProps): ReactNode => {
 
   return (
     <div
+      className={props.className}
       style={{ ...WrapperStyle, ...props.style }}
       tw={props.tw}
     >

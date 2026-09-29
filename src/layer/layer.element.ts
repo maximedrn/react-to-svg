@@ -25,6 +25,7 @@ const toSatoriElement: (node: ResolvedNode) => ReactNode = (
     props: {
       ...node.props,
       children: node.children.map(toSatoriElement),
+      tw: node.props.className ?? node.props.tw,
     },
     type: node.type,
   };

@@ -25,6 +25,7 @@ import type {
   LayerTree,
   ScopeNode,
 } from "@/layer/layer.types.ts";
+import { measureHeight, resolveConfig } from "@/render.options.ts";
 import {
   type RenderableComponent,
   type RenderOptions,
@@ -250,11 +251,8 @@ const renderDocument: (
   ComposeError | MeasureError | RasterizeError | ResolveError
 > =>
   Effect.gen(function* () {
-    const config: SatoriConfig = {
-      fonts: options.fonts,
-      height: options.height,
-      width: options.width,
-    };
+    const height: number =
+      options.height ?? (yield* measureHeight(Component, options));
     const variants: readonly (readonly [ThemeVariant, LayerTree])[] =
       yield* Effect.forEach(
         Object.values(ThemeVariant),
@@ -264,7 +262,15 @@ const renderDocument: (
           readonly [ThemeVariant, LayerTree],
           MeasureError | RasterizeError | ResolveError
         > =>
-          buildTheme(Component, variant, config).pipe(
+          resolveConfig({ ...options, height }, variant).pipe(
+            Effect.flatMap(
+              (
+                config: SatoriConfig,
+              ): Effect.Effect<
+                LayerTree,
+                MeasureError | RasterizeError | ResolveError
+              > => buildTheme(Component, variant, config),
+            ),
             Effect.map(
               (tree: LayerTree): readonly [ThemeVariant, LayerTree] => [
                 variant,
@@ -288,7 +294,7 @@ const renderDocument: (
           createElement(SvgDocument, {
             layers,
             theme,
-            viewport: { height: options.height, width: options.width },
+            viewport: { height, width: options.width },
           }),
         );
       },

@@ -1,0 +1,19 @@
+diff --git a/dist/index.js b/dist/index.js
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -8 +8,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
++//# sourceMappingURL=index.js.map
++// Keep each Tailwind theme isolated, including configurations replaced by HMR.
++const themeInstances = new WeakMap();
++const defaultThemeConfig = {};
++Xo = function getThemeStyles({ width, height, config = defaultThemeConfig }) {
++  let instance = themeInstances.get(config);
++  if (!instance) {
++    instance = ZC(config);
++    themeInstances.set(config, instance);
++  }
++  instance.setWindowDimensions({ width: +width, height: +height });
++  return instance;
++};

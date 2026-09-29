@@ -77,6 +77,7 @@ interface Timeline {
 interface AnimatedProps {
   readonly animation: Animation;
   readonly children: ReactNode;
+  readonly className?: string;
   readonly style?: StyleObject;
   readonly tw?: string;
 }
@@ -95,6 +96,7 @@ interface DelayProps {
 interface StaggerProps {
   readonly animation: Animation;
   readonly children: ReactNode;
+  readonly className?: string;
   readonly stepMs: number;
   readonly style?: StyleObject;
   readonly tw?: string;

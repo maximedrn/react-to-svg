@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import type { SatoriOptions } from "satori";
 
 /**
  * The two color schemes a document carries.
@@ -52,7 +53,13 @@ interface FontConfig {
  */
 interface RenderOptions {
   readonly fonts: readonly FontConfig[];
-  readonly height: number;
+  /**
+   * Omit to measure the light theme's intrinsic height, rounded up.
+   */
+  readonly height?: number;
+  readonly tailwindConfig?:
+    | SatoriOptions["tailwindConfig"]
+    | ((theme: ThemeVariant) => SatoriOptions["tailwindConfig"]);
   readonly width: number;
 }
 

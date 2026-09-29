@@ -51,12 +51,14 @@ const pin: (node: ElementNode, box: Box) => ElementNode = (
  *
  * @param {ElementNode} node - The element to inspect.
  *
- * @returns {boolean} `true` when a `tw` class or an expensive style is present.
+ * @returns {boolean} `true` when a Tailwind class or an expensive style is
+ *   present.
  */
 const needsExpensiveReset: (node: ElementNode) => boolean = (
   node: ElementNode,
 ): boolean => {
-  if (is.string(node.props.tw) && node.props.tw.length > 0) {
+  const classes: string | undefined = node.props.className ?? node.props.tw;
+  if (is.string(classes) && classes.length > 0) {
     return true;
   }
   const style: StyleObject = node.props.style ?? {};

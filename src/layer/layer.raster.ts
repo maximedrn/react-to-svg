@@ -1,4 +1,5 @@
-import satori from "satori";
+import is from "@sindresorhus/is";
+import satori, { type SatoriOptions } from "satori";
 import { toSatoriElement } from "@/layer/layer.element.ts";
 import type { Layer } from "@/layer/layer.types.ts";
 import type { FontConfig } from "@/render.types.ts";
@@ -9,7 +10,8 @@ import type { ElementNode } from "@/resolve/resolve.types.ts";
  */
 interface SatoriConfig {
   readonly fonts: readonly FontConfig[];
-  readonly height: number;
+  readonly height?: number;
+  readonly tailwindConfig?: SatoriOptions["tailwindConfig"];
   readonly width: number;
 }
 
@@ -34,7 +36,10 @@ const rasterizeLayer: (
 ): Promise<Layer> => {
   const svg: string = await satori(toSatoriElement(tree), {
     fonts: [...config.fonts],
-    height: config.height,
+    ...(is.undefined(config.height) ? {} : { height: config.height }),
+    ...(is.undefined(config.tailwindConfig)
+      ? {}
+      : { tailwindConfig: config.tailwindConfig }),
     width: config.width,
   });
   return { svg };

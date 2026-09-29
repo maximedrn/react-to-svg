@@ -107,7 +107,10 @@ const measureTree: (
 
   await satori(toSatoriElement(tagged), {
     fonts: [...config.fonts],
-    height: config.height,
+    ...(is.undefined(config.height) ? {} : { height: config.height }),
+    ...(is.undefined(config.tailwindConfig)
+      ? {}
+      : { tailwindConfig: config.tailwindConfig }),
     onNodeDetected: (detected: SatoriNode): void => {
       const token: unknown = detected.props[NodeTokenProp];
       const source: ElementNode | undefined = is.object(token)

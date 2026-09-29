@@ -12,6 +12,7 @@ type StyleObject = Readonly<Record<string, unknown>>;
  * Props carried by a resolved element: an arbitrary bag plus a few knowns.
  */
 interface NodeProps extends Readonly<Record<string, unknown>> {
+  readonly className?: string;
   readonly style?: StyleObject;
   readonly tw?: string;
 }

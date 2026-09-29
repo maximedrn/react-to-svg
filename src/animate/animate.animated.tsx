@@ -11,9 +11,9 @@ import type { StyleObject } from "@/resolve/resolve.types.ts";
 /**
  * Marks its subtree as an animated scope.
  *
- * `style` and `tw` are forwarded, so the scope can _be_ the styled element
- * instead of adding a layer to the layout. Children inherit the resolved
- * timeline, which is what makes nested scopes compose.
+ * `className`, `style` and `tw` are forwarded, so the scope can _be_ the styled
+ * element instead of adding a layer to the layout. Children inherit the
+ * resolved timeline, which is what makes nested scopes compose.
  *
  * @param {AnimatedProps} props - The animation to apply, the children, and
  *   optional styling.
@@ -31,6 +31,7 @@ const Animated: FC<AnimatedProps> = (props: AnimatedProps): ReactNode => {
     <TimelineContext.Provider value={resolved.childTimeline}>
       <div
         {...resolved.scopeProps}
+        className={props.className}
         style={style}
         tw={props.tw}
       >
