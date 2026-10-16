@@ -8,11 +8,6 @@
 const NodeTokenProp = "data-render-node";
 
 /**
- * Media type used when a rasterized layer is embedded as an `<image>`.
- */
-const SvgMediaType = "image/svg+xml";
-
-/**
  * Layout properties that Satori resolves for a text run.
  */
 const TextNodeType = "#text";
@@ -65,6 +60,5 @@ export {
   NodeTokenProp,
   PaintReset,
   PaintResetExpensive,
-  SvgMediaType,
   TextNodeType,
 };
