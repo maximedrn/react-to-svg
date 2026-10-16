@@ -7,6 +7,7 @@
 - Remove the invisible patterns, masks and filters emitted to reset the paint of animated layers' ancestors, together with every resource left unreferenced; they rendered nothing yet cost an offscreen pass on each animation frame.
 - Inline the inline `<svg>` children Satori embeds as data-URI images, such as icons, as nested viewports, dropping their redundant clip paths and masks.
 - Add `@xmldom/xmldom` as a dependency to parse and flatten Satori's output.
+- Require Effect 4: the `effect` peer dependency is now `^4.0.0`. `RenderService` is declared with `Context.Service`.
 
 ## 0.2.0
 

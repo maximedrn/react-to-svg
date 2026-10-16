@@ -68,11 +68,11 @@ describe("'renderDocument'.", (): void => {
       throw new Error("render failed");
     };
     const outcome = await Effect.runPromise(
-      Effect.either(renderDocument(Boom, Config, Theme)),
+      Effect.result(renderDocument(Boom, Config, Theme)),
     );
 
-    expect(outcome._tag).toBe("Left");
-    expect(outcome._tag === "Left" ? outcome.left._tag : undefined).toBe(
+    expect(outcome._tag).toBe("Failure");
+    expect(outcome._tag === "Failure" ? outcome.failure._tag : undefined).toBe(
       "ResolveError",
     );
   });

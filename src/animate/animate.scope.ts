@@ -16,7 +16,7 @@ const ScopeProp = "data-animation-scope";
  * nested animation only needs to be an object, not a fully validated one.
  */
 const AnimationScopeSchema = Schema.Struct({
-  animation: Schema.Object,
+  animation: Schema.ObjectKeyword,
   beginMs: Schema.Number,
 });
 

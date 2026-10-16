@@ -59,7 +59,7 @@
     "satori@0.28.2": "patches/satori@0.28.2.patch"
   },
   "peerDependencies": {
-    "effect": "^3.10",
+    "effect": "^4.0.0",
     "react": "^19",
     "react-dom": "^19"
   },

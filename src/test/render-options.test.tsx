@@ -42,9 +42,9 @@ describe("Render options.", (): void => {
     const Empty: RenderableComponent = () =>
       createElement("div", { style: { display: "flex" } });
     const outcome = await Effect.runPromise(
-      Effect.either(renderDocument(Empty, { fonts: [], width: 200 }, Theme)),
+      Effect.result(renderDocument(Empty, { fonts: [], width: 200 }, Theme)),
     );
-    expect(outcome._tag === "Left" ? outcome.left._tag : undefined).toBe(
+    expect(outcome._tag === "Failure" ? outcome.failure._tag : undefined).toBe(
       "MeasureError",
     );
   });
@@ -157,11 +157,11 @@ describe("Render options.", (): void => {
       throw new Error(TestErrors.configuration);
     };
     const outcome = await Effect.runPromise(
-      Effect.either(
+      Effect.result(
         renderDocument(TailwindPanel, { ...Config, tailwindConfig }, Theme),
       ),
     );
-    expect(outcome._tag === "Left" ? outcome.left._tag : undefined).toBe(
+    expect(outcome._tag === "Failure" ? outcome.failure._tag : undefined).toBe(
       "MeasureError",
     );
   });
