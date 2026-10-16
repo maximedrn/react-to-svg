@@ -1,168 +1,265 @@
 import { describe, expect, it } from "bun:test";
 import { Effect } from "effect";
-import { createElement } from "react";
 import type { SatoriOptions } from "satori";
 import { Animated } from "@/animate/animate.animated.tsx";
 import { Stagger } from "@/animate/animate.stagger.tsx";
+import { MeasureError } from "@/layer/layer.errors.ts";
 import { type Measurement, measureTree } from "@/layer/layer.measure.ts";
-import { projectScope } from "@/layer/layer.project.ts";
-import { renderDocument } from "@/render.pipeline.ts";
-import { type RenderableComponent, ThemeVariant } from "@/render.types.ts";
+import type { IRenderService } from "@/render.interface.ts";
+import { makeRenderService } from "@/render.service.ts";
+import { ThemeVariant } from "@/render.types.ts";
 import { resolveTree } from "@/resolve/resolve.renderer.ts";
 import type { ElementNode } from "@/resolve/resolve.types.ts";
 import { fade } from "@/test/test.animations.ts";
 import { AutoHeight } from "@/test/test.auto-height.tsx";
-import { Config, Theme } from "@/test/test.constants.ts";
+import { Config, Height, Width } from "@/test/test.constants.ts";
+import { Empty } from "@/test/test.empty.tsx";
+import { ShadowPanel } from "@/test/test.shadow.tsx";
+import { readSvg, type SvgOutput, themeLayers } from "@/test/test.svg.ts";
 import {
+  AutoConfig,
+  Cases,
+  ChildStyle,
+  Classes,
   DarkConfig,
+  ExpectedDocument,
+  ExpectedLayout,
+  FailureCases,
   Layout,
+  LayoutCases,
   LightConfig,
+  Palette,
   ReplacementConfig,
   TestErrors,
 } from "@/test/test.tailwind.constants.ts";
 import { TailwindPanel } from "@/test/test.tailwind.tsx";
 
-describe("Render options.", (): void => {
-  it("Uses the light theme's intrinsic height for the shared viewport.", async (): Promise<void> => {
-    const markup: string = await Effect.runPromise(
-      renderDocument(AutoHeight, { fonts: [], width: 200 }, Theme),
-    );
-    expect(markup).toContain('viewBox="0 0 200 41"');
-    expect(markup.includes("<image")).toBe(false);
-  });
+const renderer: IRenderService = makeRenderService();
 
-  it("Keeps an explicitly supplied viewport height.", async (): Promise<void> => {
-    const markup: string = await Effect.runPromise(
-      renderDocument(AutoHeight, Config, Theme),
-    );
-    expect(markup).toContain('viewBox="0 0 200 120"');
-  });
+describe(Cases.suite, (): void => {
+  it(Cases.automatic, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const output: SvgOutput = readSvg(
+          yield* renderer.renderSVG(AutoHeight, AutoConfig),
+        );
+        expect(output.frame).toEqual({
+          height: ExpectedLayout.automaticHeight,
+          viewBox: [
+            ...ExpectedDocument.origin,
+            Width,
+            ExpectedLayout.automaticHeight,
+          ],
+          width: Width,
+        });
+        expect(output.themes.size).toBe(ExpectedDocument.themeCount);
+        for (const layers of output.themes.values())
+          expect(layers).toHaveLength(ExpectedDocument.baseLayerCount);
+      }),
+    ),
+  );
 
-  it("Reports empty automatic layouts through the typed error channel.", async (): Promise<void> => {
-    const Empty: RenderableComponent = () =>
-      createElement("div", { style: { display: "flex" } });
-    const outcome = await Effect.runPromise(
-      Effect.result(renderDocument(Empty, { fonts: [], width: 200 }, Theme)),
-    );
-    expect(outcome._tag === "Failure" ? outcome.failure._tag : undefined).toBe(
-      "MeasureError",
-    );
-  });
+  it(Cases.explicit, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const output: SvgOutput = readSvg(
+          yield* renderer.renderSVG(AutoHeight, Config),
+        );
+        expect(output.frame).toEqual({
+          height: Height,
+          viewBox: [...ExpectedDocument.origin, Width, Height],
+          width: Width,
+        });
+      }),
+    ),
+  );
 
-  it("Uses className ahead of the legacy tw prop when measuring host elements.", async (): Promise<void> => {
-    const root: ElementNode = resolveTree(
-      createElement("div", { className: "flex h-[48px]", tw: "flex h-[16px]" }),
-    );
-    const { boxes }: Measurement = await measureTree(root, {
-      fonts: [],
-      width: 200,
-    });
-    expect(boxes.get(root)?.height).toBe(Layout.classNameHeight);
-    const legacy: ElementNode = resolveTree(
-      createElement("div", { tw: "flex h-[16px]" }),
-    );
-    expect(
-      (await measureTree(legacy, { fonts: [], width: 200 })).boxes.get(legacy)
-        ?.height,
-    ).toBe(Layout.legacyHeight);
-  });
+  it(Cases.emptyLayout, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const failure = yield* Effect.flip(
+          renderer.renderSVG(Empty, AutoConfig),
+        );
+        expect(failure).toBeInstanceOf(MeasureError);
+      }),
+    ),
+  );
 
-  it("Lays out className on Animated and Stagger wrappers.", async (): Promise<void> => {
-    const root: ElementNode = resolveTree(
-      <Stagger
-        animation={fade(0)}
-        className="p-[8px]"
-        stepMs={100}
-      >
-        <Animated
-          animation={fade(0)}
-          className="p-[4px]"
-        >
-          <div style={{ display: "flex", height: 8, width: 8 }} />
-        </Animated>
-      </Stagger>,
-    );
-    const { boxes }: Measurement = await measureTree(root, {
-      fonts: [],
-      width: 200,
-    });
-    expect(boxes.get(root)?.height).toBe(Layout.wrapperHeight);
-  });
-
-  it("Resets className shadows on the ancestors of animated layers.", async (): Promise<void> => {
-    const root: ElementNode = resolveTree(
-      <div
-        className="flex shadow-lg"
-        style={{ display: "flex" }}
-      >
-        <Animated animation={fade(0)}>
-          <div style={{ display: "flex", height: 8, width: 8 }} />
-        </Animated>
-      </div>,
-    );
-    const { boxes, scopes }: Measurement = await measureTree(root, Config);
-    expect(scopes).toHaveLength(1);
-    for (const scope of scopes)
-      expect(projectScope(root, scope, boxes).props.style).toMatchObject({
-        boxShadow: "0 0 0 0 transparent",
-      });
-  });
-
-  it("Uses a shared Tailwind config for measurement and rasterization.", async (): Promise<void> => {
-    const markup: string = await Effect.runPromise(
-      renderDocument(
-        TailwindPanel,
-        { fonts: [], tailwindConfig: LightConfig, width: 200 },
-        Theme,
+  for (const scenario of LayoutCases) {
+    it(scenario.name, (): Promise<void> =>
+      Effect.runPromise(
+        Effect.gen(function* () {
+          const root: ElementNode = yield* Effect.sync((): ElementNode =>
+            resolveTree(<div {...scenario.props} />),
+          );
+          const { boxes }: Measurement = yield* Effect.promise(
+            (): Promise<Measurement> => measureTree(root, AutoConfig),
+          );
+          expect(boxes.get(root)?.height).toBe(scenario.height);
+        }),
       ),
     );
-    expect(markup).toContain('viewBox="0 0 200 40"');
-    expect(markup.includes('class="dark"')).toBe(false);
-    expect(markup).toContain('fill="#ff0000"');
-  });
+  }
 
-  it("Keeps theme configurations and subsequent replacements isolated.", async (): Promise<void> => {
-    const markup: string = await Effect.runPromise(
-      renderDocument(
-        TailwindPanel,
-        {
-          fonts: [],
-          tailwindConfig: (
-            variant: ThemeVariant,
-          ): SatoriOptions["tailwindConfig"] =>
-            variant === ThemeVariant.dark ? DarkConfig : LightConfig,
-          width: 200,
-        },
-        Theme,
-      ),
-    );
-    expect(markup).toContain(".t0{fill:#ff0000}");
-    expect(markup).toContain(
-      "@media (prefers-color-scheme: dark){.t0{fill:#0000ff}}",
-    );
-    const replacement: string = await Effect.runPromise(
-      renderDocument(
-        TailwindPanel,
-        { fonts: [], tailwindConfig: ReplacementConfig, width: 200 },
-        Theme,
-      ),
-    );
-    expect(replacement).toContain('viewBox="0 0 200 48"');
-    expect(replacement).toContain('fill="#00ff00"');
-    expect(replacement.includes("#ff0000")).toBe(false);
-  });
+  it(Cases.wrappers, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const root: ElementNode = yield* Effect.sync((): ElementNode =>
+          resolveTree(
+            <Stagger
+              animation={fade(Layout.delayMs)}
+              className={Classes.stagger}
+              stepMs={Layout.stepMs}
+            >
+              <Animated
+                animation={fade(Layout.delayMs)}
+                className={Classes.animated}
+              >
+                <div style={ChildStyle} />
+              </Animated>
+            </Stagger>,
+          ),
+        );
+        const { boxes }: Measurement = yield* Effect.promise(
+          (): Promise<Measurement> => measureTree(root, AutoConfig),
+        );
+        expect(boxes.get(root)?.height).toBe(ExpectedLayout.wrapperHeight);
+      }),
+    ),
+  );
 
-  it("Reports a failing Tailwind config factory through the typed error channel.", async (): Promise<void> => {
-    const tailwindConfig = (): never => {
-      throw new Error(TestErrors.configuration);
-    };
-    const outcome = await Effect.runPromise(
-      Effect.result(
-        renderDocument(TailwindPanel, { ...Config, tailwindConfig }, Theme),
+  it(Cases.shadow, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const output: SvgOutput = readSvg(
+          yield* renderer.renderSVG(ShadowPanel, Config),
+        );
+        expect(output.themes.size).toBe(ExpectedDocument.themeCount);
+        for (const layers of output.themes.values()) {
+          expect(layers).toHaveLength(ExpectedDocument.animatedLayerCount);
+          expect(layers[0]?.shadowColors.length).toBeGreaterThan(0);
+          expect(layers[1]?.shadowColors).toEqual([]);
+          expect(layers[1]?.fills).toContain(Palette.content);
+        }
+      }),
+    ),
+  );
+
+  it(Cases.shared, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const output: SvgOutput = readSvg(
+          yield* renderer.renderSVG(TailwindPanel, {
+            ...AutoConfig,
+            tailwindConfig: LightConfig,
+          }),
+        );
+        expect(output.frame.height).toBe(ExpectedLayout.sharedHeight);
+        expect(output.themes.size).toBe(ExpectedDocument.themeCount);
+        for (const layers of output.themes.values()) {
+          expect(layers).toHaveLength(ExpectedDocument.baseLayerCount);
+          for (const layer of layers)
+            expect(layer.fills).toContain(Palette.light);
+        }
+      }),
+    ),
+  );
+
+  it(Cases.themes, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const output: SvgOutput = readSvg(
+          yield* renderer.renderSVG(TailwindPanel, {
+            ...AutoConfig,
+            tailwindConfig: (
+              variant: ThemeVariant,
+            ): SatoriOptions["tailwindConfig"] =>
+              variant === ThemeVariant.dark ? DarkConfig : LightConfig,
+          }),
+        );
+        expect(themeLayers(output, ThemeVariant.dark)[0]?.fills).toContain(
+          Palette.dark,
+        );
+        expect(themeLayers(output, ThemeVariant.light)[0]?.fills).toContain(
+          Palette.light,
+        );
+      }),
+    ),
+  );
+
+  it(Cases.replacement, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const first: SvgOutput = readSvg(
+          yield* renderer.renderSVG(TailwindPanel, {
+            ...AutoConfig,
+            tailwindConfig: LightConfig,
+          }),
+        );
+        expect(first.frame.height).toBe(ExpectedLayout.sharedHeight);
+        const replacement: SvgOutput = readSvg(
+          yield* renderer.renderSVG(TailwindPanel, {
+            ...AutoConfig,
+            tailwindConfig: ReplacementConfig,
+          }),
+        );
+        expect(replacement.frame.height).toBe(ExpectedLayout.replacementHeight);
+        expect(replacement.themes.size).toBe(ExpectedDocument.themeCount);
+        for (const layers of replacement.themes.values()) {
+          expect(layers).toHaveLength(ExpectedDocument.baseLayerCount);
+          for (const layer of layers)
+            expect(layer.fills).toContain(Palette.replacement);
+        }
+      }),
+    ),
+  );
+
+  it(Cases.concurrent, (): Promise<void> =>
+    Effect.runPromise(
+      Effect.gen(function* () {
+        const documents = yield* Effect.all(
+          {
+            dark: renderer.renderSVG(TailwindPanel, {
+              ...AutoConfig,
+              tailwindConfig: DarkConfig,
+            }),
+            light: renderer.renderSVG(TailwindPanel, {
+              ...AutoConfig,
+              tailwindConfig: LightConfig,
+            }),
+          },
+          { concurrency: ExpectedDocument.themeCount },
+        );
+        const dark: SvgOutput = readSvg(documents.dark);
+        const light: SvgOutput = readSvg(documents.light);
+        for (const variant of [ThemeVariant.dark, ThemeVariant.light]) {
+          expect(themeLayers(dark, variant)[0]?.fills).toContain(Palette.dark);
+          expect(themeLayers(light, variant)[0]?.fills).toContain(
+            Palette.light,
+          );
+        }
+      }),
+    ),
+  );
+
+  for (const scenario of FailureCases) {
+    it(scenario.name, (): Promise<void> =>
+      Effect.runPromise(
+        Effect.gen(function* () {
+          const cause: Error = new Error(TestErrors.configuration);
+          const tailwindConfig: () => never = (): never => {
+            throw cause;
+          };
+          const failure = yield* Effect.flip(
+            renderer.renderSVG(TailwindPanel, {
+              ...scenario.options,
+              tailwindConfig,
+            }),
+          );
+          expect(failure).toBeInstanceOf(MeasureError);
+          expect(failure.cause).toBe(cause);
+        }),
       ),
     );
-    expect(outcome._tag === "Failure" ? outcome.failure._tag : undefined).toBe(
-      "MeasureError",
-    );
-  });
+  }
 });
