@@ -1,8 +1,9 @@
 /**
  * React-to-svg — turn a React component into a single animated, theme-aware SVG
- * string. Resolve → measure → project → rasterize → compose, all without ever
- * parsing markup. Rendering is an Effect; I/O (writing, serving) is left to
- * you.
+ * string. Resolve → measure → project → rasterize → flatten → compose: every
+ * layer is drawn inline in one flat document, and themes that only differ by
+ * colors are drawn once. Rendering is an Effect; I/O (writing, serving) is left
+ * to you.
  *
  * @packageDocumentation
  */

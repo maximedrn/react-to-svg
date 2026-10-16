@@ -1,6 +1,6 @@
 import is from "@sindresorhus/is";
 import type { FC, ReactNode } from "react";
-import { LayerImage } from "@/compose/compose.image.tsx";
+import { LayerContent } from "@/compose/compose.content.tsx";
 import type { LayerGroupProps } from "@/compose/compose.types.ts";
 import type { CrossFadeLayer, LayerTree } from "@/layer/layer.types.ts";
 
@@ -15,26 +15,26 @@ import type { CrossFadeLayer, LayerTree } from "@/layer/layer.types.ts";
  * color state, each carrying its cross-fade opacity animation (the first is the
  * always-opaque base), so the rasters blend from color to color.
  *
- * @param {LayerGroupProps} props - The layer tree to render and the viewport it
- *   fills.
+ * @param {LayerGroupProps} props - The layer tree to render and the flattened
+ *   markup of its layers.
  *
- * @returns {ReactNode} The layer image, its nested layers, and any animation.
+ * @returns {ReactNode} The layer content, its nested layers, and any animation.
  */
 const LayerGroup: FC<LayerGroupProps> = (props: LayerGroupProps): ReactNode => {
   const crossFade: readonly CrossFadeLayer[] | undefined = props.tree.crossFade;
   const body: ReactNode =
     is.undefined(crossFade) || crossFade.length === 0 ? (
-      <LayerImage
+      <LayerContent
         layer={props.tree.layer}
-        viewport={props.viewport}
+        markup={props.markup}
       />
     ) : (
       crossFade.map((stop: CrossFadeLayer, index: number): ReactNode => (
-        <LayerImage
+        <LayerContent
           key={`fade-${String(index)}`}
           layer={stop.layer}
+          markup={props.markup}
           style={stop.animation?.style}
-          viewport={props.viewport}
         />
       ))
     );
@@ -45,8 +45,8 @@ const LayerGroup: FC<LayerGroupProps> = (props: LayerGroupProps): ReactNode => {
       {props.tree.children.map((child: LayerTree, index: number): ReactNode => (
         <LayerGroup
           key={`layer-${String(index)}`}
+          markup={props.markup}
           tree={child}
-          viewport={props.viewport}
         />
       ))}
     </>

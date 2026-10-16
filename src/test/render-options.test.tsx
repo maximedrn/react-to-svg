@@ -22,23 +22,13 @@ import {
 } from "@/test/test.tailwind.constants.ts";
 import { TailwindPanel } from "@/test/test.tailwind.tsx";
 
-const layersOf: (markup: string) => readonly string[] = (
-  markup: string,
-): readonly string[] =>
-  [...markup.matchAll(/href="data:image\/svg\+xml;base64,([^"]+)"/g)].map(
-    (match: RegExpMatchArray): string =>
-      Buffer.from(match[1] ?? "", "base64").toString(),
-  );
-
 describe("Render options.", (): void => {
   it("Uses the light theme's intrinsic height for the shared viewport.", async (): Promise<void> => {
     const markup: string = await Effect.runPromise(
       renderDocument(AutoHeight, { fonts: [], width: 200 }, Theme),
     );
     expect(markup).toContain('viewBox="0 0 200 41"');
-    expect(layersOf(markup)).toHaveLength(2);
-    for (const layer of layersOf(markup))
-      expect(layer).toContain('height="41"');
+    expect(markup.includes("<image")).toBe(false);
   });
 
   it("Keeps an explicitly supplied viewport height.", async (): Promise<void> => {
@@ -127,9 +117,8 @@ describe("Render options.", (): void => {
       ),
     );
     expect(markup).toContain('viewBox="0 0 200 40"');
-    expect(layersOf(markup)).toHaveLength(2);
-    for (const layer of layersOf(markup))
-      expect(layer).toContain('fill="#ff0000"');
+    expect(markup.includes('class="dark"')).toBe(false);
+    expect(markup).toContain('fill="#ff0000"');
   });
 
   it("Keeps theme configurations and subsequent replacements isolated.", async (): Promise<void> => {
@@ -147,10 +136,10 @@ describe("Render options.", (): void => {
         Theme,
       ),
     );
-    const layers: readonly string[] = layersOf(markup);
-    expect(layers).toHaveLength(2);
-    expect(layers[0]).toContain('fill="#0000ff"');
-    expect(layers[1]).toContain('fill="#ff0000"');
+    expect(markup).toContain(".t0{fill:#ff0000}");
+    expect(markup).toContain(
+      "@media (prefers-color-scheme: dark){.t0{fill:#0000ff}}",
+    );
     const replacement: string = await Effect.runPromise(
       renderDocument(
         TailwindPanel,
@@ -159,8 +148,8 @@ describe("Render options.", (): void => {
       ),
     );
     expect(replacement).toContain('viewBox="0 0 200 48"');
-    for (const layer of layersOf(replacement))
-      expect(layer).toContain('fill="#00ff00"');
+    expect(replacement).toContain('fill="#00ff00"');
+    expect(replacement.includes("#ff0000")).toBe(false);
   });
 
   it("Reports a failing Tailwind config factory through the typed error channel.", async (): Promise<void> => {

@@ -25,6 +25,7 @@ interface StyleView {
  */
 interface PropsView {
   readonly className?: unknown;
+  readonly dangerouslySetInnerHTML?: unknown;
   readonly href?: unknown;
   readonly tw?: unknown;
   readonly viewBox?: unknown;
