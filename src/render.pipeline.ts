@@ -2,13 +2,10 @@ import is from "@sindresorhus/is";
 import { Effect } from "effect";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import {
-  type ColorStop,
-  colorStops,
-  compileAnimations,
-} from "@/animate/animate.css.ts";
+import { type ColorStop, colorStops } from "@/animate/animate.css.ts";
 import { SvgDocument } from "@/compose/compose.document.tsx";
 import { ComposeError, ComposeMessages } from "@/compose/compose.errors.ts";
+import { composeThemes } from "@/compose/compose.themes.ts";
 import {
   MeasureError,
   MeasureMessages,
@@ -156,9 +153,10 @@ const rasterizeProjection: (
   });
 
 /**
- * Builds the layer tree for one theme. Each theme is resolved and measured
- * independently, so a component may legitimately render a different structure
- * per theme without the two getting out of step.
+ * Builds the rasterized layer tree for one theme. Each theme is resolved and
+ * measured independently, so a component may legitimately render a different
+ * structure per theme without the two getting out of step. Its animations are
+ * compiled once the composition knows whether the themes can share them.
  *
  * @param {RenderableComponent} Component - The component to render.
  * @param {ThemeVariant} theme - The theme variant to render it for.
@@ -191,11 +189,10 @@ const buildTheme: (
       try: (): Promise<Measurement> => measureTree(root, config),
     });
 
-    const rasterized: LayerTree = yield* rasterizeProjection(
+    return yield* rasterizeProjection(
       projectAll(root, measurement.boxes, measurement.scopes),
       config,
     );
-    return compileAnimations(rasterized, `a-${theme}-`);
   });
 
 /**
@@ -286,13 +283,12 @@ const renderDocument: (
         new ComposeError({ cause, message: ComposeMessages.failed }),
       try: (): string => {
         const byTheme: ReadonlyMap<ThemeVariant, LayerTree> = new Map(variants);
-        const layers: Readonly<Record<ThemeVariant, LayerTree>> = {
-          dark: requireTheme(byTheme, ThemeVariant.dark),
-          light: requireTheme(byTheme, ThemeVariant.light),
-        };
         return renderToStaticMarkup(
           createElement(SvgDocument, {
-            layers,
+            composition: composeThemes({
+              dark: requireTheme(byTheme, ThemeVariant.dark),
+              light: requireTheme(byTheme, ThemeVariant.light),
+            }),
             theme,
             viewport: { height, width: options.width },
           }),

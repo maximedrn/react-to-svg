@@ -27,7 +27,8 @@ interface ScopeNode {
 }
 
 /**
- * A rasterized layer: opaque SVG bytes that are never inspected.
+ * A rasterized layer: the SVG markup Satori produced for it, flattened into the
+ * composed document once both themes are known.
  */
 interface Layer {
   readonly svg: string;

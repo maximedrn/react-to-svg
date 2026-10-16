@@ -1,3 +1,4 @@
+import type { ThemedColor } from "@/flatten/flatten.types.ts";
 import type { Box, Layer } from "@/layer/layer.types.ts";
 import type { ElementNode } from "@/resolve/resolve.types.ts";
 
@@ -50,7 +51,7 @@ const Channel = {
  */
 const Expected = {
   delayBegins: [Timing.shortDelayed, 0],
-  images: 6,
+  layers: 6,
   panelBegins: [
     0,
     Timing.headline,
@@ -76,9 +77,17 @@ const Config = { fonts: [], height: Height, width: Width } as const;
 const SampleBox: Box = { height: 20, left: 10, top: 30, width: 40 };
 
 /**
- * The composer never inspects a layer, so an opaque sentinel is enough.
+ * The document only inlines the markup the composition hands it, so opaque
+ * sentinels are enough.
  */
 const SampleLayer: Layer = { svg: "layer-bytes" };
+const SampleMarkup = '<rect width="1" height="1"/>';
+const ThemedFill: ThemedColor = {
+  className: "t0",
+  dark: "#000",
+  light: "#fff",
+  property: "fill",
+};
 const Source: ElementNode = { children: [], props: {}, type: "div" };
 
 export {
@@ -88,9 +97,11 @@ export {
   Height,
   SampleBox,
   SampleLayer,
+  SampleMarkup,
   Shape,
   Source,
   Theme,
+  ThemedFill,
   Timing,
   Width,
 };

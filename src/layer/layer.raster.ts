@@ -18,14 +18,13 @@ interface SatoriConfig {
 /**
  * Rasterizes a projected tree.
  *
- * The result is deliberately opaque: it is stored, embedded and discarded, but
- * never read, parsed or edited. That is the single place where the pipeline
- * touches Satori's string output, and it is a boundary, not a representation.
+ * The result is kept as Satori's string output: the projection never reads it,
+ * and only the flattening step parses it, once both themes are rasterized.
  *
  * @param {ElementNode} tree - The projected tree to rasterize.
  * @param {SatoriConfig} config - Fonts and viewport Satori needs.
  *
- * @returns {Promise<Layer>} The opaque SVG bytes of the layer.
+ * @returns {Promise<Layer>} The SVG markup of the layer.
  */
 const rasterizeLayer: (
   tree: ElementNode,

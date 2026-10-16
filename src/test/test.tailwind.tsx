@@ -1,14 +1,15 @@
 import type { ReactNode } from "react";
 import type { RenderableComponent } from "@/render.types.ts";
+import { BoxStyle, Classes } from "@/test/test.tailwind.constants.ts";
 
 const TailwindPanel: RenderableComponent = (): ReactNode => (
   <div
-    className="flex flex-col bg-accent p-inset"
-    style={{ display: "flex" }}
+    className={Classes.panel}
+    style={BoxStyle}
   >
     <div
-      className="flex h-content w-content"
-      style={{ display: "flex" }}
+      className={Classes.content}
+      style={BoxStyle}
     />
   </div>
 );
